@@ -115,5 +115,48 @@ type singleDocParser struct {
 }
 
 func (s *singleDocParser) handleDocument(evtHandler EventHandler) {
+}
 
+func (s *singleDocParser) handleNode(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleSequence(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleBlockSequence(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleFlowSequence(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleMap(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleBlockMap(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleFlowMap(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleCompactMap(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) handleCompactMapWithNoKey(evtHandler EventHandler) {
+}
+
+func (s *singleDocParser) parseProperties(tag string, anchor Anchor) {
+}
+
+func (s *singleDocParser) parseTag(tag string) {
+}
+
+func (s *singleDocParser) parseAnchor(anchor Anchor) {
+}
+
+func (s *singleDocParser) registerAnchor(name string) Anchor {
+	return NullAnchor
+}
+
+func (s *singleDocParser) lookupAnchor(mark Mark, name string) Anchor {
+	return NullAnchor
 }
