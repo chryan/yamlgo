@@ -3,7 +3,7 @@ package yaml
 type nodeBuilder struct {
 	root interface{}
 
-	stack []interface{}
+	stack   []interface{}
 	anchors []interface{}
 
 	// Pushed keys
