@@ -1,16 +1,16 @@
 package yaml
 
 type EventHandler interface {
-	OnDocumentStart(mark Mark)
-	OnDocumentEnd()
+	DocumentStart(mark Mark)
+	DocumentEnd()
 
-	OnNull(mark Mark, anchor Anchor)
-	OnAlias(mark Mark, anchor Anchor)
-	OnScalar(mark Mark, tag string, anchor Anchor, value string)
+	Null(mark Mark, anchor Anchor)
+	Alias(mark Mark, anchor Anchor)
+	Scalar(mark Mark, tag string, anchor Anchor, value string)
 
-	OnSequenceStart(mark Mark, tag string, anchor Anchor)
-	OnSequenceEnd()
+	SequenceStart(mark Mark, tag string, anchor Anchor)
+	SequenceEnd()
 
-	OnMapStart(mark Mark, tag string, anchor Anchor)
-	OnMapEnd()
+	MapStart(mark Mark, tag string, anchor Anchor)
+	MapEnd()
 }
