@@ -10,6 +10,16 @@ type Parser struct {
 	directives *Directives
 }
 
+type ParseError struct {
+	mark  Mark
+	error string
+}
+
+// String returns a human-readable error message.
+func (e *ParseError) String() string {
+	return fmt.Sprintf("%v - %v", e.mark, e.error)
+}
+
 func NewParser(reader io.Reader) *Parser {
 	return &Parser{scanner: NewScanner(reader), directives: NewDirectives()}
 }
@@ -23,19 +33,31 @@ func (p *Parser) Load(reader io.Reader) {
 	p.directives = NewDirectives()
 }
 
-func (p *Parser) HandleNextDocument(evtHandler EventHandler) bool {
+func (p *Parser) HandleNextDocument(evtHandler EventHandler) (success bool, err error) {
 	if p.scanner == nil {
-		return false
+		return
 	}
+
+	// Handle directive parsing panics.
+	defer func() {
+		if r := recover(); r != nil {
+			success = false
+			var ok bool
+			if err, ok = r.(error); !ok {
+				err = fmt.Errorf("yamlgo: %v", r)
+			}
+		}
+	}()
 
 	p.parseDirectives()
 	if p.scanner.Empty() {
-		return false
+		return
 	}
 
 	sdp := &singleDocParser{p.scanner, p.directives}
 	sdp.handleDocument(evtHandler)
-	return true
+	success = true
+	return
 }
 
 func (p *Parser) PrintTokens() (output string) {
@@ -80,13 +102,13 @@ func (p *Parser) handleDirective(token *Token) {
 
 func (p *Parser) handleYamlDirective(token *Token) {
 	if len(token.Params) != 1 {
-		panic(fmt.Sprintf("%v - %v", token.Mark, ERR_YAML_DIRECTIVE_ARGS))
+		panic(&ParseError{token.Mark, ERR_YAML_DIRECTIVE_ARGS})
 	} else if !p.directives.Version.IsDefault {
-		panic(fmt.Sprintf("%v - %v", token.Mark, ERR_REPEATED_YAML_DIRECTIVE))
+		panic(&ParseError{token.Mark, ERR_REPEATED_YAML_DIRECTIVE})
 	} else if c, err := fmt.Sscanf(token.Params[0], "%d.%d", &p.directives.Version.Major, &p.directives.Version.Minor); c != 2 || err != nil {
-		panic(fmt.Sprintf("%v - %v %v", token.Mark, ERR_YAML_VERSION, token.Params[0]))
+		panic(&ParseError{token.Mark, ERR_YAML_VERSION + " " + token.Params[0]})
 	} else if p.directives.Version.Major > 1 {
-		panic(fmt.Sprintf("%v - %v", token.Mark, ERR_YAML_MAJOR_VERSION))
+		panic(&ParseError{token.Mark, ERR_YAML_MAJOR_VERSION})
 	}
 
 	p.directives.Version.IsDefault = false
@@ -94,12 +116,12 @@ func (p *Parser) handleYamlDirective(token *Token) {
 
 func (p *Parser) handleTagDirective(token *Token) {
 	if len(token.Params) != 2 {
-		panic(fmt.Sprintf("%v - %v", token.Mark, ERR_TAG_DIRECTIVE_ARGS))
+		panic(&ParseError{token.Mark, ERR_TAG_DIRECTIVE_ARGS})
 	}
 
 	handle := token.Params[0]
 	if _, ok := p.directives.Tags[handle]; !ok {
-		panic(fmt.Sprintf("%v - %v", token.Mark, ERR_REPEATED_TAG_DIRECTIVE))
+		panic(&ParseError{token.Mark, ERR_REPEATED_TAG_DIRECTIVE})
 	} else {
 		p.directives.Tags[handle] = token.Params[1] // token.Params[1] == prefix
 	}
