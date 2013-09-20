@@ -21,7 +21,10 @@ func (e *ParseError) String() string {
 }
 
 func NewParser(reader io.Reader) *Parser {
-	return &Parser{scanner: NewScanner(reader), directives: NewDirectives()}
+	return &Parser{
+		scanner: NewScanner(reader),
+		directives: NewDirectives(),
+	}
 }
 
 func (p *Parser) IsValid() bool {
@@ -54,7 +57,7 @@ func (p *Parser) HandleNextDocument(evtHandler EventHandler) (success bool, err 
 		return
 	}
 
-	sdp := &singleDocParser{p.scanner, p.directives}
+	sdp := newSingleDocParser(p.scanner, p.directives)
 	sdp.handleDocument(evtHandler)
 	success = true
 	return
@@ -77,7 +80,7 @@ func (p *Parser) parseDirectives() {
 
 	for !p.scanner.Empty() {
 		token := p.scanner.Peek()
-		if token.Type != DIRECTIVE {
+		if token.Type != TOKEN_DIRECTIVE {
 			break
 		} else if !readDirective {
 			// we keep the directives from the last document if none are specified
@@ -125,60 +128,4 @@ func (p *Parser) handleTagDirective(token *Token) {
 	} else {
 		p.directives.Tags[handle] = token.Params[1] // token.Params[1] == prefix
 	}
-}
-
-/********************************/
-/* Single document parsing code */
-/********************************/
-
-type singleDocParser struct {
-	scanner    *Scanner
-	directives *Directives
-}
-
-func (s *singleDocParser) handleDocument(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleNode(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleSequence(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleBlockSequence(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleFlowSequence(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleMap(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleBlockMap(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleFlowMap(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleCompactMap(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) handleCompactMapWithNoKey(evtHandler EventHandler) {
-}
-
-func (s *singleDocParser) parseProperties(tag string, anchor Anchor) {
-}
-
-func (s *singleDocParser) parseTag(tag string) {
-}
-
-func (s *singleDocParser) parseAnchor(anchor Anchor) {
-}
-
-func (s *singleDocParser) registerAnchor(name string) Anchor {
-	return NullAnchor
-}
-
-func (s *singleDocParser) lookupAnchor(mark Mark, name string) Anchor {
-	return NullAnchor
 }
